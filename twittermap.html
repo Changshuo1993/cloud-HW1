@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tweet Map</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0">
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+<div id="panel">
+    <div class="dropdown">
+        <button class="dropbtn">Keywords!</button>
+        <div class="dropdown-content">
+            <a href="javascript:deleteMarkers();">Clear</a>
+            <a href="javascript:show('california');">California</a>
+            <a href="javascript:show('game');">Game</a>
+            <a href="javascript:show('fashion');">Fashion</a>
+            <a href="javascript:show('trump');">Trump</a>
+            <a href="javascript:show('food');">Food</a>
+            <a href="javascript:show('movie');">movie</a>
+        </div>
+    </div>
+</div>
+
+<div id="map"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.js"></script>
+<script>
+    var socket,getdata,map;
+    var markers = [];
+    var infowindow = null;
+    function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: {lat: 40.7127, lng: -90},
+            zoom: 2
+        });
+        socket = io('http://localhost:8888');
+        console.log(socket);
+        socket.on('welcome', function(data){
+            getdata = data;
+            console.log('welcome');                 
+        })
+    }
+    function addMarker(data, map) {
+        var contentString = '<div id="content">'+'<div id="siteNotice">'+'</div>'+
+        '<h1 id="firstHeading" class="firstHeading">data.usr</h1>'+
+        '<div id="bodyContent">'+ '<p>'+data.txt+'</p>'+'<p>'+data.ul+'</p>'+
+        '</div>'+'</div>';
+        var location = {lat: data.lat, lng : data.lng};
+        var marker = new google.maps.Marker({
+            position: location,
+            map: map,
+        });
+        marker.setIcon('http://maps.google.com/mapfiles/ms/icons/green-dot.png')
+        marker.addListener('click', function() {
+            if (infowindow) infowindow.setMap(null);
+            infowindow = new google.maps.InfoWindow({
+                content: contentString
+            });
+            infowindow.open(map, marker);
+        });
+        markers.push(marker);
+    }
+    function setAllMap(map) {
+        console.log(markers.length);
+        for (var i = 0; i < markers.length; i++) {
+            markers[i].setMap(map);
+        }
+    }
+    function clearMarkers() {
+        setAllMap(null);
+    }
+    function deleteMarkers() {
+        clearMarkers();
+        markers = [];
+    }
+    function show(key) {
+        //send message to server
+        deleteMarkers();
+        if (infowindow) infowindow.setMap(null);
+        console.log(key);
+        socket.emit('keypass', {message:key, id: getdata.id}); /*send data to the server*/
+        socket.on('marks', function(data){    //of the client in this case.
+            console.log('location');
+            data = data.message;
+            for (var i = 0; i < data.length; i++) {
+                console.log(location);
+                addMarker(data[i], map);
+            }
+            setAllMap(map);
+        });
+        }
+</script>
+     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAkjLVH5J-Zwiwr7WQbdyh2x2rsP03kZ84&callback=initMap" type="text/javascript"></script>
+  </body>
+</html>
