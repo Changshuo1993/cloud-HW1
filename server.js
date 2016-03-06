@@ -2,8 +2,6 @@ var http = require('http');
 var fs = require('fs');
 var elasticsearch = require('elasticsearch');
 
-
-
 function send404Response(response) {
     response.writeHead(404, {"Content-Type": "text/plain"});
     response.write("Error 404: Page Not Found");
