@@ -21,10 +21,10 @@ public class ImportES {
                         .build());
                 client = ft.getObject();
                 String source = jsonBuilder() 
-                        .startObject().field("userName", status.getUser().getName())
+                        .startObject().field("keyword",index)
+                        .field("userName", status.getUser().getName())
                         .field("createdTime", status.getCreatedAt().toString())
                         .field("text", status.getText())
-                        .field("keyword",index)
                         .field("latitude", status.getGeoLocation().getLatitude())
                         .field("longtitude",status.getGeoLocation().getLongitude())
                         .endObject().string();
